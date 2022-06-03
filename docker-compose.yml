@@ -1,0 +1,18 @@
+version: '3.4'
+
+services:
+  redis:
+    image: redis:latest
+
+  web1:
+    image: ${DOCKER_REGISTRY-}web1
+    build:
+      context: .
+      dockerfile: web1/Dockerfile
+
+  web2:
+    image: ${DOCKER_REGISTRY-}web2
+    build:
+      context: .
+      dockerfile: web2/Dockerfile
+
