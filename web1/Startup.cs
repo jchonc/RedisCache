@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
-using web1.Services;
 
 namespace web1
 {
@@ -22,8 +21,6 @@ namespace web1
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton(ConnectionMultiplexer.Connect("redis"));
-            services.AddSingleton<SearchCacheService>();
-            services.AddHostedService(p => p.GetRequiredService<SearchCacheService>());
             services.AddControllers();
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "web1", Version = "v1"}); });
         }

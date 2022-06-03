@@ -1,4 +1,4 @@
-﻿namespace web2.Models
+﻿namespace web1.Models
 {
     public class HashModel
     {

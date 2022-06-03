@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
-using web2.Services;
 
 namespace web2
 {
@@ -21,7 +20,6 @@ namespace web2
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton(ConnectionMultiplexer.Connect("redis"));
-            services.AddHostedService<FakeDownstreamService>();
             services.AddControllers();
         }
 

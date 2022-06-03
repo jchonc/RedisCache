@@ -1,35 +1,48 @@
 ﻿using System.Linq;
-using System.Threading;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 using web1.Models;
-using web1.Services;
 
 namespace web1.Controllers
 {
     [ApiController]
     public class QueryController : ControllerBase
     {
-        private readonly SearchCacheService _searchCacheService;
+        private readonly ConnectionMultiplexer _connection;
+        private readonly string _queryId = "client1-source1";
 
-        public QueryController(SearchCacheService searchCacheService)
+        public QueryController(ConnectionMultiplexer connection)
         {
-            _searchCacheService = searchCacheService;
+            _connection = connection;
         }
 
-        [HttpPost("api/query")]
-        public object DoSearch([FromBody] ApiRequest request)
+        [HttpPost("api/setAll")]
+        public object DoSetAll([FromBody] HashModel request)
         {
-            const int maxTimeOut = 10000;
-            var waitHandles = request.sourceIds.Select(sourceId =>
-                    _searchCacheService.EnsureSearchResult(request.clientId, sourceId, request.pageSize))
-                .Where(handle => handle != null).ToArray();
+            var db = _connection.GetDatabase(0);
 
-            if (waitHandles.Any() && !WaitHandle.WaitAll(waitHandles, maxTimeOut)) return "fail to fetch it";
+            db.HashSet(_queryId, new[]
+            {
+                new HashEntry("value_int", request.ValueInt),
+                new HashEntry("value_string", request.ValueString)
+            });
 
-            var results = request.sourceIds.Select(sourceId =>
-                _searchCacheService.FetchSearchResult(request.clientId, sourceId, request.pageSize)).ToList();
+            return Ok();
+        }
 
-            return string.Join(", ", results);
+        [HttpGet("api/getAll")]
+        public object DoGetAll()
+        {
+            var db = _connection.GetDatabase(0);
+
+            var value = db.HashGetAll(_queryId);
+            if (value.Length == 0) return NotFound();
+
+            return new HashModel
+            {
+                ValueInt = (int) value.Single(a => a.Name == "value_int").Value,
+                ValueString = value.Single(a => a.Name == "value_string").Value
+            };
         }
     }
 }
